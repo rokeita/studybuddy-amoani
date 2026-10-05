@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyBuddy — built for E. Amoani</title>
+<style>
+  :root { --ink:#2b2118; --paper:#faf6ef; --accent:#b3541e; --accent2:#2e6b4f; --card:#fffdf8; --line:#e5d9c3; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: Georgia, 'Times New Roman', serif; background:var(--paper); color:var(--ink); line-height:1.55; }
+  header { background:var(--ink); color:var(--paper); padding:1.4rem 1rem; text-align:center; }
+  header h1 { margin:0 0 .3rem; font-size:1.7rem; letter-spacing:.5px; }
+  header p { margin:.15rem 0; font-size:.95rem; opacity:.92; }
+  .badge { display:inline-block; margin-top:.5rem; font-family: ui-monospace, monospace; font-size:.75rem;
+           background:#3a2e22; border:1px solid #5a4a38; color:#ffd9a8; padding:.3rem .7rem; border-radius:999px; }
+  main { max-width:720px; margin:0 auto; padding:1.2rem 1rem 3rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1.2rem; margin-bottom:1.1rem;
+          box-shadow:0 2px 8px rgba(43,33,24,.06); }
+  h2 { margin:.2rem 0 .8rem; font-size:1.25rem; color:var(--accent); }
+  textarea { width:100%; min-height:170px; font-family:inherit; font-size:.95rem; padding:.7rem; border:1px solid var(--line);
+             border-radius:10px; background:#fff; resize:vertical; }
+  .row { display:flex; gap:.7rem; flex-wrap:wrap; align-items:center; margin-top:.8rem; }
+  label { font-size:.9rem; }
+  select, button { font-family:inherit; font-size:.95rem; }
+  select { padding:.5rem .6rem; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  button { cursor:pointer; border:none; border-radius:10px; padding:.65rem 1.3rem; font-weight:bold; }
+  .primary { background:var(--accent); color:#fff; }
+  .primary:hover { background:#9a4718; }
+  .ghost { background:transparent; border:1px solid var(--line); color:var(--ink); }
+  .ghost:hover { background:#f3ead9; }
+  button:disabled { opacity:.55; cursor:wait; }
+  .q { border-top:1px dashed var(--line); padding:1rem 0; }
+  .q:first-child { border-top:none; }
+  .q h3 { margin:0 0 .6rem; font-size:1.05rem; }
+  .opt { display:block; margin:.35rem 0; padding:.55rem .7rem; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:#fff; }
+  .opt:hover { border-color:var(--accent); }
+  .opt:has(input:checked) { border-color:var(--accent); background:#fdf3e7; }
+  .opt input { margin-right:.5rem; }
+  .q textarea { min-height:70px; margin-top:.3rem; }
+  .result { border-radius:10px; padding:.8rem; margin:.5rem 0; }
+  .ok { background:#e9f4ec; border:1px solid #9cc3a8; }
+  .bad { background:#fbeeea; border:1px solid #dfa08e; }
+  .result .fb { font-style:italic; margin:.3rem 0; }
+  .result .ans { font-size:.9rem; }
+  .score { text-align:center; font-size:1.4rem; margin:1rem 0; }
+  .score b { color:var(--accent2); font-size:2rem; }
+  #spinner { display:none; text-align:center; padding:2rem; font-style:italic; }
+  .err { background:#fbeeea; border:1px solid #dfa08e; border-radius:10px; padding:.8rem; margin-top:.8rem; }
+  .step { display:none; } .step.active { display:block; }
+  footer { text-align:center; font-size:.8rem; opacity:.7; padding:1.5rem; }
+  .steps-nav { display:flex; gap:.4rem; justify-content:center; margin-bottom:1rem; font-size:.85rem; }
+  .steps-nav span { padding:.25rem .8rem; border-radius:999px; border:1px solid var(--line); }
+  .steps-nav .on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 StudyBuddy</h1>
+  <p>A practice partner built for <b>E. Amoani</b> — paste your course notes, get quizzed.</p>
+  <span class="badge">Gemma 3 · open weights · running locally on your machine · no internet needed</span>
+</header>
+<main>
+  <div class="steps-nav">
+    <span id="nav1" class="on">1 · Notes</span><span id="nav2">2 · Quiz</span><span id="nav3">3 · Results</span>
+  </div>
+
+  <section id="step1" class="step active">
+    <div class="card">
+      <h2>Step 1 — Your study notes</h2>
+      <textarea id="notes" placeholder="Paste your course notes here..."></textarea>
+      <div class="row">
+        <button class="ghost" id="sampleBtn">Load sample notes</button>
+        <label>Questions
+          <select id="nq"><option>3</option><option selected>5</option><option>8</option><option>10</option></select>
+        </label>
+        <label>Type
+          <select id="qt"><option value="mixed">Mixed</option><option value="mcq">Multiple choice</option><option value="short">Short answer</option></select>
+        </label>
+        <button class="primary" id="genBtn">Generate quiz ⚡</button>
+      </div>
+      <div id="genErr"></div>
+    </div>
+  </section>
+
+  <div id="spinner">Gemma is reading your notes and writing questions… (runs on your machine, may take a minute) ⏳</div>
+
+  <section id="step2" class="step">
+    <div class="card">
+      <h2>Step 2 — Answer the questions</h2>
+      <div id="quiz"></div>
+      <div class="row">
+        <button class="primary" id="submitBtn">Submit answers ✓</button>
+        <button class="ghost" id="backBtn">← New notes</button>
+      </div>
+      <div id="gradeErr"></div>
+    </div>
+  </section>
+
+  <section id="step3" class="step">
+    <div class="card">
+      <h2>Step 3 — How did you do?</h2>
+      <div class="score" id="score"></div>
+      <div id="results"></div>
+      <div class="row">
+        <button class="primary" id="retryBtn">↻ Quiz me again</button>
+        <button class="ghost" id="newBtn">← New notes</button>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>StudyBuddy · built with open-source AI for the Hacktoberfest 2026 DEV Weekend Challenge · MIT licensed</footer>
+
+<script>
+let questions = [];
+const $ = id => document.getElementById(id);
+function go(n){ [1,2,3].forEach(i=>{ $('step'+i).classList.toggle('active', i===n); $('nav'+i).classList.toggle('on', i===n); }); window.scrollTo(0,0); }
+
+$('sampleBtn').onclick = async () => {
+  const r = await fetch('/api/sample-notes'); const d = await r.json();
+  $('notes').value = d.notes;
+};
+
+$('genBtn').onclick = async () => {
+  $('genErr').innerHTML=''; $('spinner').style.display='block'; $('genBtn').disabled = true;
+  try {
+    const r = await fetch('/api/quiz', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ notes:$('notes').value, num_questions:+$('nq').value, qtype:$('qt').value }) });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'generation failed');
+    questions = d.questions; renderQuiz(); go(2);
+  } catch(e){ $('genErr').innerHTML = '<div class="err">⚠️ '+e.message+'</div>'; }
+  finally { $('spinner').style.display='none'; $('genBtn').disabled = false; }
+};
+
+function renderQuiz(){
+  $('quiz').innerHTML = questions.map((q,i)=>`
+    <div class="q" data-id="${q.id}">
+      <h3>${i+1}. ${q.question}</h3>
+      ${q.type==='mcq'
+        ? q.options.map(o=>`<label class="opt"><input type="radio" name="q${q.id}" value="${o.replace(/"/g,'&quot;')}"> ${o}</label>`).join('')
+        : `<textarea data-short="${q.id}" placeholder="Type your answer..."></textarea>`}
+    </div>`).join('');
+}
+
+$('submitBtn').onclick = async () => {
+  $('gradeErr').innerHTML=''; $('submitBtn').disabled = true; $('spinner').style.display='block';
+  try {
+    const items = questions.map(q=>{
+      let student='';
+      if(q.type==='mcq'){ const sel=document.querySelector(`input[name="q${q.id}"]:checked`); student = sel? sel.value : ''; }
+      else { student = document.querySelector(`textarea[data-short="${q.id}"]`).value.trim(); }
+      return { id:q.id, type:q.type, question:q.question, answer:q.answer, explanation:q.explanation||'', student };
+    });
+    const r = await fetch('/api/grade', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({items}) });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'grading failed');
+    renderResults(d);
+    go(3);
+  } catch(e){ $('gradeErr').innerHTML = '<div class="err">⚠️ '+e.message+'</div>'; }
+  finally { $('submitBtn').disabled = false; $('spinner').style.display='none'; }
+};
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function renderResults(d){
+  $('score').innerHTML = `You scored <b>${d.score}</b> / ${d.total}`;
+  $('results').innerHTML = d.results.map((r,i)=>{
+    const q = questions.find(x=>x.id===r.id);
+    return `<div class="result ${r.correct?'ok':'bad'}">
+      <b>${i+1}. ${r.correct?'✅ Correct':'❌ Not quite'}</b> — ${esc(q.question)}
+      <div class="fb">${esc(r.feedback)}</div>
+      ${r.user_answer?`<div class="ans"><i>Your answer:</i> ${esc(r.user_answer)}</div>`:''}
+      <div class="ans"><i>Answer:</i> ${esc(r.correct_answer)}</div>
+      ${r.explanation?`<div class="ans">${esc(r.explanation)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+$('backBtn').onclick = ()=>go(1);
+$('newBtn').onclick = ()=>go(1);
+$('retryBtn').onclick = ()=>{ renderQuiz(); go(2); };
+</script>
+</body>
+</html>
