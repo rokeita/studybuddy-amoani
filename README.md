@@ -46,11 +46,7 @@ Swap in a bigger Gemma any time — just point `llama-server` at a larger GGUF.
 
 ## Screenshots
 
-| Paste your notes | Get quizzed | Get graded |
-|---|---|---|
-| ![Step 1 — study notes](screenshots/1-notes.png) | ![Step 2 — quiz](screenshots/2-quiz.png) | ![Step 3 — results](screenshots/3-results.png) |
-
-All three: sample Managerial Economics notes → a 5-question mixed quiz → instant grading with explanations, 100% offline.
+Demo screenshots (notes → quiz → graded results) are in the DEV challenge submission post — the repo's GitHub App upload path mangles binary files, so they live with the write-up instead of here.
 
 ## Why open innovation matters here
 
