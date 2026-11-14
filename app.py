@@ -132,6 +132,8 @@ def grade_one(it):
         # ("efficiently.") while the key doesn't ("efficiently")
         correct = bool(_norm(it.get("answer"))) and _norm(it.get("student")) == _norm(it.get("answer"))
         return correct, ("Correct - nice!" if correct else "Not quite - see the answer below.")
+    if not _norm(it.get("answer")):
+        return False, "No reference answer for this question, so it can't be graded."
     if short_is_clearly_right(it.get("student"), it.get("answer")):
         return True, "Correct - nice!"
     prompt = GRADE_ONE_PROMPT.format(
