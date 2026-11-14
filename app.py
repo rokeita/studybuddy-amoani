@@ -135,8 +135,8 @@ def grade_one(it):
     if short_is_clearly_right(it.get("student"), it.get("answer")):
         return True, "Correct - nice!"
     prompt = GRADE_ONE_PROMPT.format(
-        question=it["question"], answer=it["answer"],
-        student=it["student"] or "(no answer given)",
+        question=it.get("question", ""), answer=it.get("answer", ""),
+        student=it.get("student") or "(no answer given)",
     )
     last_err = None
     for _ in range(2):
@@ -146,9 +146,9 @@ def grade_one(it):
         except Exception as e:  # noqa: BLE001
             last_err = e
     # last resort: exact/close match instead of failing the whole submission
-    truth = (it["answer"] or "").strip().lower()
-    given = (it["student"] or "").strip().lower()
-    return (truth and truth in given), f"(auto-graded; model hiccup: {last_err})"
+    truth = (it.get("answer") or "").strip().lower()
+    given = (it.get("student") or "").strip().lower()
+    return bool(truth and truth in given), f"(auto-graded; model hiccup: {last_err})"
 
 
 def grade_answers(items):
@@ -156,11 +156,11 @@ def grade_answers(items):
     for it in items:
         correct, feedback = grade_one(it)
         results.append({
-            "id": it["id"],
+            "id": it.get("id"),
             "correct": correct,
             "feedback": feedback,
-            "user_answer": it["student"],
-            "correct_answer": it["answer"],
+            "user_answer": it.get("student"),
+            "correct_answer": it.get("answer"),
             "explanation": it.get("explanation", ""),
         })
     return results
@@ -189,11 +189,14 @@ def sample_notes():
 
 @app.post("/api/quiz")
 def quiz():
-    body = request.get_json(force=True)
+    body = request.get_json(force=True, silent=True) or {}
     notes = (body.get("notes") or "").strip()
     if len(notes) < 50:
         return jsonify({"error": "Paste some study notes first (at least a paragraph)."}), 400
-    n = max(1, min(10, int(body.get("num_questions", 5))))
+    try:
+        n = max(1, min(10, int(body.get("num_questions", 5))))
+    except (TypeError, ValueError):
+        return jsonify({"error": "num_questions must be a number"}), 400
     qtype = body.get("qtype", "mixed")
     if qtype not in ("mixed", "mcq", "short"):
         qtype = "mixed"
@@ -205,7 +208,7 @@ def quiz():
 
 @app.post("/api/grade")
 def grade():
-    body = request.get_json(force=True)
+    body = request.get_json(force=True, silent=True) or {}
     items = body.get("items", [])
     if not items:
         return jsonify({"error": "nothing to grade"}), 400
